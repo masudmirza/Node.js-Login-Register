@@ -22,7 +22,7 @@ let smtpTransporter = nodemailer.createTransport({
 const addUser = async (req, res) => {
     try {
       const { name, email, password } = req.body;
-      const token  = jwt.sign({ name, email, password }, process.env.TOKEN_SECRET, { expiresIn: '10m' });
+      const token  = jwt.sign({ name, email, password }, process.env.TOKEN_SECRET, { expiresIn: '20m' });
 
       // Mail details
       let mailOptions  = {
@@ -103,7 +103,7 @@ const loginUser = async (req, res) => {
       });
     }
 
-    const accessToken =  jwt.sign({ email }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '5s'});
+    const accessToken =  jwt.sign({ email }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '15s'});
     const refreshToken = jwt.sign({ email }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '1d'});
     res.cookie('access_token', accessToken, {
       httpOnly: true,
@@ -129,7 +129,7 @@ const forgotPassword = (req, res) => {
         title: 'Forgot-password'
       });
     }
-    const token  = jwt.sign({ email }, process.env.RESET_PASSWORD_KEY, { expiresIn: '1d' });
+    const token  = jwt.sign({ email }, process.env.RESET_PASSWORD_KEY, { expiresIn: '20m' });
 
     // Mail details
     let mailOptions  = {
