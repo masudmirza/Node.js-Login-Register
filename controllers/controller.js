@@ -1,9 +1,9 @@
-require('dotenv').config();
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
-const nodemailer = require('nodemailer');
+require('dotenv').config()
+const bcrypt = require('bcrypt')
+const jwt = require('jsonwebtoken')
+const nodemailer = require('nodemailer')
 
-const { client } = require('../database');
+const { client } = require('../database')
 
 
 // Here we are configuring our SMTP Server details.
@@ -21,8 +21,8 @@ let smtpTransporter = nodemailer.createTransport({
 
 const addUser = async (req, res) => {
     try {
-      const { name, email, password } = req.body;
-      const token  = jwt.sign({ name, email, password }, process.env.TOKEN_SECRET, { expiresIn: '20m' });
+      const { name, email, password } = req.body
+      const token  = jwt.sign({ name, email, password }, process.env.ACTIVATE_TOKEN_SECRET, { expiresIn: '20m' })
 
       // Mail details
       let mailOptions  = {
@@ -38,34 +38,39 @@ const addUser = async (req, res) => {
       // Send mail with defined transport object
       smtpTransporter.sendMail(mailOptions, (err, info) => {
         if (err) {
-          console.log(err);
+          console.log(err)
           res.status(401).render('register', {
             title: 'register',
-            message: 'something went wrong'
-          });
+            message: 'Something went wrong'
+          })
         }
-        console.log(info);
+        console.log(info)
         res.status(201).send('Email verification has sended your email account, please check up your email address'); 
       })
     } catch (error) {
-      console.log(error);
+      console.log(error)
+      res.redirect('register', {
+        title: 'Register',
+        message: 'Something went wrong'
+      })
     }
   };
 
 const activateAccount = (req, res) => {
-  const token = req.params.token;
+  const token = req.params.token
   if (token) {
-    jwt.verify(token, process.env.TOKEN_SECRET, async (err, decodedToken) => {
+    jwt.verify(token, process.env.ACTIVATE_TOKEN_SECRET, async (err, decodedToken) => {
+      if (err) console.log(err)
       try {
-      const { name, email, password } = decodedToken;
-      const hashedPassword = await bcrypt.hash(password, 10);
+      const { name, email, password } = decodedToken
+      const hashedPassword = await bcrypt.hash(password, 10)
       const newUser = await client.query(
       'INSERT INTO usersinfo (users_name,users_email,users_password) VALUES ($1,$2,$3) RETURNING *',
-      [name,email, hashedPassword]);
+      [name,email, hashedPassword])
       return res.render('login', {
         title: 'login',
         message: 'You registered successfully'
-      });
+      })
       } catch (err) {
       console.log(err);
       return res.render('register', {
@@ -78,46 +83,51 @@ const activateAccount = (req, res) => {
 }
 
 
-const loginUser = async (req, res) => {
+const loginUser =  async (req, res) => {
   try{
     const { email, password } = req.body;
-    const users = await client.query('SELECT * FROM usersinfo WHERE users_email = $1', [email]);
+    const users = await client.query('SELECT * FROM usersinfo WHERE users_email = $1', [email])
     if (!password || !email) {
       return res.render('login', {
-        message: 'Please enter your email address and password',
-        title: 'login'
-      });
+        title: 'login',
+        message: 'Please enter your email address and password'
+      })
     }
     if (users.rows.length === 0){
       return res.render('login', {
-        message: 'Email is incorrect',
-        title: 'login'
-      });
+        title: 'login',
+        message: 'Email is incorrect'
+      })
     }
 
-    const validPassword = await bcrypt.compare(password, users.rows[0].users_password);
-    if (!validPassword){
+    const validPassword = await bcrypt.compare(password, users.rows[0].users_password)
+    if (!validPassword) {
       return res.render('login', {
-        message: 'Password is incorrect',
-        title: 'login'
-      });
+        title: 'login',
+        message: 'Password is incorrect'
+      })
     }
 
-    const accessToken =  jwt.sign({ email }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '15s'});
-    const refreshToken = jwt.sign({ email }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '1d'});
+    const accessToken =  jwt.sign({ email }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '15s'})
+    const refreshToken = jwt.sign({ email }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '1d'})
     res.cookie('access_token', accessToken, {
       httpOnly: true,
       maxAge: 5 * 1000
-    });
+    })
     res.cookie('refresh_token', refreshToken, {
       httpOnly: true,
       maxAge: 60 * 60 * 24 * 1000
-    });
-    res.redirect('/dashboard');
+    })
+    res.redirect('/dashboard')
   } catch (err) {
-    if (err) console.log(err);
+    if (err) console.log(err)
+    return res.render('login', {
+      title: 'login',
+      message: 'Something went wrong'
+    })
   }
-};
+}
+
 
 
 const forgotPassword = (req, res) => {
@@ -125,11 +135,11 @@ const forgotPassword = (req, res) => {
   const users = client.query('SELECT * FROM usersinfo WHERE users_email = $1', [email], (err, user) => {
     if (user.rows.length === 0){
       return res.render('forgot-password', {
-        message: 'This email does not exists',
-        title: 'Forgot-password'
-      });
+        title: 'Forgot-password',
+        message: 'This email does not exists'
+      })
     }
-    const token  = jwt.sign({ email }, process.env.RESET_PASSWORD_KEY, { expiresIn: '20m' });
+    const token  = jwt.sign({ email }, process.env.RESET_PASSWORD_KEY, { expiresIn: '20m' })
 
     // Mail details
     let mailOptions  = {
@@ -145,40 +155,40 @@ const forgotPassword = (req, res) => {
     // Send mail with defined transport object
     smtpTransporter.sendMail(mailOptions, (err, info) => {
       if (err) {
-        console.log(err);
+        console.log(err)
         res.status(401).render('forgot-password', {
           title: 'Forgot-password',
-          message: 'something went wrong'
-        });
+          message: 'Something went wrong'
+        })
       }
-      console.log(info);
-      res.status(201).send('Reset-password link has sended your email account, please check up your email account');
+      console.log(info)
+      res.status(201).send('Reset-password link has sended your email account, please check up your email account')
     })
-  });
+  })
 }
 
 const resetPassword  = (req, res) => {
-  const token  = req.params.token;
-  const newPassword = req.body.newPassword;
-  console.log(newPassword);
-  console.log(token);
+  const token  = req.params.token
+  const newPassword = req.body.newPassword
   if (token) {
     jwt.verify(token, process.env.RESET_PASSWORD_KEY, async (err, decodedToken) => {
       try {
-        const { email } = decodedToken;
+        const { email } = decodedToken
         const hashedPassword = await bcrypt.hash(newPassword, 10);
         const newPass = await client.query(
         'UPDATE usersinfo SET users_password = $1 where users_email = $2',
-        [hashedPassword, email]);
+        [hashedPassword, email])
         return res.render('login', {
           title: 'login',
-          message: 'You reseted successfully, please login'
-        });
+          message: 'You reseted password successfully, please login'
+        })
       } catch (err) {
         console.log(err);
-        return res.render('reset-password', {
-        title: 'Reset-password',
-        });
+        req.flash('error_message',)
+        return res.render('forgot-password', {
+        title: 'Forgot-password',
+        message : 'Something went wrong'
+        })
       }
     })
   }
@@ -186,9 +196,9 @@ const resetPassword  = (req, res) => {
 
 
 const logoutUser = (req, res) => {
-  res.cookie('refresh_token', '', { maxAge: 1 });
-  res.redirect('/');
-} 
+  res.cookie('refresh_token', '', { maxAge: 1 })
+  res.redirect('/')
+}
 
 
   module.exports = {
@@ -198,7 +208,6 @@ const logoutUser = (req, res) => {
       forgotPassword,
       resetPassword,
       logoutUser
-  };
- 
+  }
 
   

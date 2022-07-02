@@ -9,7 +9,11 @@
 <body>
     <h1>Login</h1>
     <form action="/login/user" method="POST">
-    {{message}}
+    {{#if message}}
+    <div>
+        {{message}}
+    </div>
+    {{/if}}
         <label for="email">Your email:</label>
         <br/>
         <input type="email" name="email" id="email">

@@ -1,34 +1,33 @@
-require('dotenv').config();
-const jwt = require('jsonwebtoken');
+require('dotenv').config()
+const jwt = require('jsonwebtoken')
 
-const verifyAccessToken = (req, res, next) => {
-    const token = req.cookies['access_token'];
-    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decodedToken) => {
-        if (err) {
-            console.log(err);
-            res.redirect('/login');
+module.exports = (req, res, next) => {
+    const accessToken = req.cookies['access_token']
+    const refreshToken = req.cookies['refresh_token']
+
+    if (accessToken) {
+        jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+            if (err) {
+                console.log(err);
+                res.redirect('/login')
+            } else {
+                req.user = decoded.user
+                next()
+            }
+        })
+    } else {
+        if (refreshToken) {
+            jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, decoded) => {
+                if (err) {
+                    console.log(err);
+                    res.redirect('/login')
+                } else {
+                    req.user = decoded.user
+                    next()
+                }
+            })
         } else {
-            console.log(decodedToken);
-            next();
+            res.redirect('/login')
         }
-    })
+    }
 }
-
-const verifyRefreshToken = (req, res, next) => {
-    const token = req.cookies['refresh_token'];
-    jwt.verify(token, process.env.REFRESH_TOKEN_SECRET, (err, decodedToken) => {
-        if (err) {
-            console.log(err);
-            res.redirect('/login');
-        } else {
-            console.log(decodedToken);
-            next();
-        }
-    })
-}
-
-
-module.exports = { 
-    verifyAccessToken,
-    verifyRefreshToken
-};
