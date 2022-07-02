@@ -6,8 +6,7 @@
 - [Technologies](#Technologies)
 ---
 ## **Description**
-Simple Login/Register application developed in Node.js using Express.js and PostgreSQL.
-Users can register with email verification and they can easily reset their password when they forget it
+To use this simple app after download create .env file and save your gmail account name and password in it. Then you can send a message to any gmail account.
 ---
 ## **Installation**
 1. Start by forking this repository on Github.
@@ -17,17 +16,14 @@ Users can register with email verification and they can easily reset their passw
 ```javascript
 npm install
 ``` 
-5. Set up database.
-6. Run the following code to start.
+5. Run the following code to start.
 ```javascript
 npm run dev
 ```
-7. Open your browser and enter this url: http://localhost:5000
+6. Open your browser and enter this url: http://localhost:5000
 ---
 ## **Technologies**
 - Node.js
 - Express.js
-- PostgreSQL
 - Express Handlebars
 - Nodemailer
-- JWT
