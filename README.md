@@ -24,6 +24,7 @@ npm start
 7. Open your browser and enter this url: http://localhost:5000
 ---
 ## **Technologies**
+- HTML
 - Node.js
 - Express.js
 - PostgreSQL
