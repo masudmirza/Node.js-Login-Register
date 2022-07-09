@@ -27,5 +27,5 @@ router.get('/dashboard', auth, (req, res) => {
     })
 })
 
-module.exports = router;
+module.exports = router
 

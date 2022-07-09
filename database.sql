@@ -7,7 +7,7 @@ CREATE TABLE usersInfo (
     users_password TEXT NOT NULL
 );
 
-SELECT * FROM usersinfo;
+SELECT * FROM usersinfo
 INSERT INTO usersinfo (users_name,users_email,users_password) VALUES ($1,$2,$3)
 SELECT * FROM usersinfo WHERE users_email = $1
 SELECT * FROM usersinfo WHERE users_email = $1
