@@ -19,7 +19,7 @@ npm install
 5. Set up database.
 6. Run the following code to start.
 ```javascript
-npm run dev
+npm start
 ```
 7. Open your browser and enter this url: http://localhost:5000
 ---
